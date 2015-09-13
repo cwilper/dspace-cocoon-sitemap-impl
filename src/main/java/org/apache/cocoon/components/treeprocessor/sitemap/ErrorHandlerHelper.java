@@ -31,6 +31,7 @@ import org.apache.cocoon.environment.Environment;
 import org.apache.cocoon.environment.ObjectModelHelper;
 import org.apache.cocoon.util.AbstractLogEnabled;
 import org.apache.commons.logging.Log;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.Map;
@@ -140,8 +141,9 @@ public class ErrorHandlerHelper extends AbstractLogEnabled
                                                                       Environment env,
                                                                       InvokeContext context)
     throws Exception {
-        if (ex instanceof ResourceNotFoundException) {
-            this.handledErrorsLogger.error(ex.getMessage());
+        String notFoundMessage = getNotFoundMessage(ex);
+        if (notFoundMessage != null) {
+            this.handledErrorsLogger.warn(notFoundMessage);
         } else {
             this.handledErrorsLogger.error(ex.getMessage(), ex);
         }
@@ -168,6 +170,32 @@ public class ErrorHandlerHelper extends AbstractLogEnabled
 
         // Exception was not handled in this error handler, propagate.
         throw ex;
+    }
+
+    /**
+     * If the given Throwable or any of its underlying exceptions or causes
+     * are ResourceNotFoundException, this returns the message found in the
+     * ResourceNotFoundException or a generic message if one is not present.
+     * Otherwise, it returns null, signaling that the error is of a different
+     * nature.
+     */
+    private static String getNotFoundMessage(final Throwable t) {
+        if (t instanceof ResourceNotFoundException) {
+            final String notFoundMessage = t.getMessage();
+            if (notFoundMessage != null) {
+                return notFoundMessage;
+            } else {
+                return "Resource not found";
+            }
+        } else if (t instanceof SAXException) {
+            final String notFoundMessage = getNotFoundMessage(((SAXException) t).getException());
+            if (notFoundMessage != null) {
+                return notFoundMessage;
+            }
+        } else if (t != null && t.getCause() != null) {
+            return getNotFoundMessage(t.getCause());
+        }
+        return null;
     }
 
     /**
