@@ -10,12 +10,11 @@
     <packaging>jar</packaging>
  
     <properties>
-        <lib.maven-compiler-plugin.version>3.3</lib.maven-compiler-plugin.version>
+        <lib.maven-compiler-plugin.version>3.5.1</lib.maven-compiler-plugin.version>
         <lib.maven-dependency-plugin.version>2.10</lib.maven-dependency-plugin.version>
-        <lib.maven-enforcer-plugin.version>1.4</lib.maven-enforcer-plugin.version>
+        <lib.maven-enforcer-plugin.version>1.4.1</lib.maven-enforcer-plugin.version>
 
-        <min.java.version>1.6</min.java.version>
-        <min.maven.version>3.3.1</min.maven.version>
+        <min.java.version>1.7</min.java.version>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -85,7 +84,7 @@
         <dependency>
             <groupId>commons-jxpath</groupId>
             <artifactId>commons-jxpath</artifactId>
-            <version>1.2</version>
+            <version>1.3</version>
             <exclusions>
                 <exclusion>
                     <artifactId>ant-optional</artifactId>
@@ -218,14 +217,23 @@
                         <configuration>
                             <fail>true</fail>
                             <rules>
-                                <requireMavenVersion>
-                                    <version>[${min.maven.version},)</version>
-                                </requireMavenVersion>
                                 <requireJavaVersion>
                                     <version>[${min.java.version},)</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
+                    </execution>
+                    <!-- Make sure that we do not have conflicting dependencies-->
+                    <execution>
+                            <id>enforce-versions</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <DependencyConvergence />
+                                </rules>
+                            </configuration>
                     </execution>
                 </executions>
             </plugin>
